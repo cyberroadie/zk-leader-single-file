@@ -2,8 +2,6 @@
 
 require 'fileutils'
 
-zooConfigPath = "/etc/zookeeper/"
-
 max = 5
 if ARGV.length > 0 
   max = ARGV[0].to_i
@@ -12,20 +10,28 @@ if ARGV.length > 0
   end
 end
 
-puts "creating " + max.to_s + " configurations"
+puts "creating #{max.to_s} configurations"
 connection_string = ""
+
+basedir = `pwd`[0..-2] 
+configdir = "#{basedir}/zk/etc/zookeeper/"
+puts "Creating configuration directory #{configdir}"
+
+FileUtils.mkdir_p(configdir)
+FileUtils.copy("log4j.properties", configdir)
 
 (1..max).each do |i| 
  t = i.to_s
  # Delete file if already exists
- File.delete("#{zooConfigPath}zk-#{t}.cfg") rescue nil
+ File.delete("#{configdir}zk-#{t}.cfg") rescue nil
  # Create data dir
- datadir = "/var/lib/zookeeper/zoo#{t}/" 
- logdir = "/var/log/zookeeper/zk#{t}/"
+ datadir = "#{basedir}/zk/var/lib/zookeeper/zoo#{t}/" 
+ logdir = "#{basedir}/zk/var/log/zookeeper/zk#{t}/"
+
  FileUtils.mkdir_p(datadir) rescue nil
  FileUtils.mkdir_p(logdir) rescue nil
  File.open("#{datadir}myid" , "w") { |f| f.puts i } 
- File.open("#{zooConfigPath}zk-#{t}.cfg", 'a') { |f|
+ File.open("#{configdir}zk-#{t}.cfg", 'a') { |f|
    f.puts "tickTime=2000"
    f.puts "initLimit=10"
    f.puts "syncLimit=5"

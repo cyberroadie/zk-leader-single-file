@@ -7,7 +7,9 @@ if ARGV.length == 0
   Kernel.exit
 end
 
-datadir = "/var/lib/zookeeper/zoo" 
+basedir = `pwd`[0..-2] 
+datadir = "#{basedir}/zk/var/lib/zookeeper/zoo" 
+
 ARGV.each do |n| 
   pid = 0
   File.open("#{datadir}#{n}/pid", 'r') { |f| pid = f.gets.to_i }
