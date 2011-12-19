@@ -36,13 +36,14 @@ FileUtils.copy("log4j.properties", configdir)
    f.puts "initLimit=10"
    f.puts "syncLimit=5"
    f.puts "dataDir=#{datadir}"
-   f.puts "clientPort=#{(2880 + i).to_s}"
+   f.puts "clientPort=#{(2180 + i).to_s}"
+   #f.puts "electionAlg=0"
    (1..max).each do |n|
       s = n.to_s()
-      f.puts "server.#{s}=localhost:289#{s}:389#{s}\n"
+      f.puts "server.#{s}=localhost:288#{s}:388#{s}"
    end
  }
-connection_string += "localhost:289#{t}," 
+connection_string += "localhost:218#{t}," 
  
 end
 

@@ -32,7 +32,7 @@ ZOOMAIN="org.apache.zookeeper.server.quorum.QuorumPeerMain"
 JVMFLAGS="-Dzookeeper.log.threshold=INFO"
 
 (1..max).each do |i|
-  zooCfg = "#{configdir}/zk-#{i.to_s}.cfg"
+  zooCfg = "#{configdir}zk-#{i.to_s}.cfg"
   zooDataDir = "#{basedir}/zk/var/lib/zookeeper/zoo#{i.to_s}/"
   zooLogDir = "#{basedir}/zk/var/log/zookeeper/zk#{i.to_s}/"
   job = []
