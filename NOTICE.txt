@@ -1,0 +1,4 @@
+Most of this product is licensed under the FreeBSD license.
+
+In addition this product includes software developed by The Apache Software
+Foundation (http://www.apache.org/).
