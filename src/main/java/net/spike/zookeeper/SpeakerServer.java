@@ -21,9 +21,9 @@ public class SpeakerServer {
 
     final static Logger logger = LoggerFactory.getLogger(SpeakerServer.class);
 
-    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private static ZNodeMonitor monitor;
-    private static String connectionString;
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private ZNodeMonitor monitor;
+    private String connectionString;
 
     private static void printUsage() {
         System.out.println("program [message] [wait between messages in millisecond]");

@@ -1,10 +1,9 @@
 package net.spike.zookeeper;
 
-import org.apache.zookeeper.CreateMode;
-import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -19,6 +18,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class RecoverableZookeeper {
 
+    final static Logger logger = LoggerFactory.getLogger(RecoverableZookeeper.class);
     private final int MAX_RETRIES = 3;
     private long RETRY_INTERVAL = 1000;
     private int sessionTimeout = 1000;
@@ -32,6 +32,14 @@ public class RecoverableZookeeper {
     /**
      * Checks if znode exists, retries up to MAX_ENTRIES with a RETRY_INTERVAL in betweeen retries
      * before it gives up.
+     */
+    /**
+     *
+     * @param path
+     * @param watcher
+     * @return
+     * @throws KeeperException
+     * @throws InterruptedException
      */
     public Stat exists(String path, Watcher watcher) throws KeeperException, InterruptedException {
         int remainingRetries = MAX_RETRIES;
@@ -62,8 +70,9 @@ public class RecoverableZookeeper {
         boolean isRetry = false;
         while (true) {
             try {
-                return zk.create(path, data, null, CreateMode.EPHEMERAL);
+                return zk.create(path, data, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
             } catch (KeeperException e) {
+                logger.debug("Error code: " + e.code());
                 switch (e.code()) {
                     case NODEEXISTS:
                         if (isRetry) {

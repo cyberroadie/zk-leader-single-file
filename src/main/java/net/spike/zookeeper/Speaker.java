@@ -1,6 +1,8 @@
 package net.spike.zookeeper;
 
 import org.apache.zookeeper.KeeperException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -12,6 +14,8 @@ import java.lang.management.ManagementFactory;
  * Date: 07/11/2011
  */
 public class Speaker implements Runnable, ZNodeMonitor.ZNodeMonitorListener {
+
+    final static Logger logger = LoggerFactory.getLogger(Speaker.class);
 
     private String message;
     private String processName;
@@ -43,7 +47,9 @@ public class Speaker implements Runnable, ZNodeMonitor.ZNodeMonitorListener {
     public void handleTask() throws IOException {
         FileWriter fstream = new FileWriter("out.txt");
         BufferedWriter out = new BufferedWriter(fstream);
-        out.write(message + ": " + counter++ + " " + processName + "\n");
+        String msg = message + ": " + counter++ + " " + processName;
+        out.write(msg + "\n");
+        logger.debug(msg);
         out.close();
     }
 

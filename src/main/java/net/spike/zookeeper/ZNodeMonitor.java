@@ -33,27 +33,28 @@ public class ZNodeMonitor implements Watcher {
 
     @Override
     public void process(WatchedEvent watchedEvent) {
-        switch(watchedEvent.getType()) {
+        switch (watchedEvent.getType()) {
             case None:
                 processNoneEvent(watchedEvent);
                 break;
             case NodeDeleted:
                 listener.stopSpeaking();
-                try {
-                    zk.create(ROOT, listener.getProcessName().getBytes());
-                    listener.startSpeaking();
-                } catch (Exception e) {
-                    // Something went wrong, lets try set a watch first before
-                    // we take any action
-                }
-            case NodeChildrenChanged:
-            case NodeCreated:
-            case NodeDataChanged:
-                try {
-                    zk.exists(ROOT, this);
-                } catch (Exception e) {
-                    shutdown(e);
-                }
+                createZNode();
+        }
+        try {
+            zk.exists(ROOT, this);
+        } catch (Exception e) {
+            shutdown(e);
+        }
+    }
+
+    private void createZNode() {
+        try {
+            zk.create(ROOT, listener.getProcessName().getBytes());
+            listener.startSpeaking();
+        } catch (Exception e) {
+            // Something went wrong, lets try set a watch first before
+            // we take any action
         }
     }
 
@@ -64,13 +65,18 @@ public class ZNodeMonitor implements Watcher {
 
     /**
      * Something changed related to the connection or session
+     *
      * @param event
      */
     public void processNoneEvent(WatchedEvent event) {
         switch (event.getState()) {
+            case SyncConnected:
+                createZNode();
+                break;
             case AuthFailed:
             case Disconnected:
             case Expired:
+            default:
                 listener.stopSpeaking();
                 break;
         }
