@@ -42,32 +42,32 @@ public class ZNodeMonitor implements Watcher {
         this.zk = new RecoverableZookeeper(connectionString, this);
     }
 
-    @Override
-    public void process(WatchedEvent watchedEvent) {
-        switch (watchedEvent.getType()) {
-            case None:
-                processNoneEvent(watchedEvent);
-                break;
-            case NodeDeleted:
-                listener.stopSpeaking();
-                createZNode();
-        }
-        try {
-            zk.exists(ROOT, this);
-        } catch (Exception e) {
-            shutdown(e);
-        }
+@Override
+public void process(WatchedEvent watchedEvent) {
+    switch (watchedEvent.getType()) {
+        case None:
+            processNoneEvent(watchedEvent);
+            break;
+        case NodeDeleted:
+            listener.stopSpeaking();
+            createZNode();
     }
+    try {
+        zk.exists(ROOT, this);
+    } catch (Exception e) {
+        shutdown(e);
+    }
+}
 
-    private void createZNode() {
-        try {
-            zk.create(ROOT, listener.getProcessName().getBytes());
-            listener.startSpeaking();
-        } catch (Exception e) {
-            // Something went wrong, lets try set a watch first before
-            // we take any action
-        }
+private void createZNode() {
+    try {
+        zk.create(ROOT, listener.getProcessName().getBytes());
+        listener.startSpeaking();
+    } catch (Exception e) {
+        // Something went wrong, lets try set a watch first before
+        // we take any action
     }
+}
 
     public void shutdown(Exception e) {
         logger.error("Unrecoverable error whilst trying to set a watch on election znode, shutting down client", e);
@@ -79,19 +79,19 @@ public class ZNodeMonitor implements Watcher {
      *
      * @param event
      */
-    public void processNoneEvent(WatchedEvent event) {
-        switch (event.getState()) {
-            case SyncConnected:
-                createZNode();
-                break;
-            case AuthFailed:
-            case Disconnected:
-            case Expired:
-            default:
-                listener.stopSpeaking();
-                break;
-        }
+public void processNoneEvent(WatchedEvent event) {
+    switch (event.getState()) {
+        case SyncConnected:
+            createZNode();
+            break;
+        case AuthFailed:
+        case Disconnected:
+        case Expired:
+        default:
+            listener.stopSpeaking();
+            break;
     }
+}
 
     public interface ZNodeMonitorListener {
         public void startSpeaking();

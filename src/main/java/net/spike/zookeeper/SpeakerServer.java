@@ -53,7 +53,10 @@ public class SpeakerServer {
 
     public void start(String[] args) {
         try {
-            readConfig();
+            if(args.length == 3)
+                readConfig(args[2]);
+            else
+                readConfig("speaker.config");
         } catch (IOException e) {
             logger.error("Can not read config file", e);
             System.exit(1);
@@ -75,12 +78,13 @@ public class SpeakerServer {
         logger.info("Speaker server started with fixed time delay of " + delay + " milliseconds.");
     }
 
-    public void readConfig() throws IOException {
+    public void readConfig(String configFile) throws IOException {
         Properties properties = new Properties();
         ClassLoader loader = ClassLoader.getSystemClassLoader ();
-        InputStream in = loader.getResourceAsStream ("speaker.config");
+        InputStream in = loader.getResourceAsStream (configFile);
         properties.load(in);
         connectionString = properties.getProperty("connectionString");
+        logger.debug("Connection string: " + connectionString);
     }
 
 }

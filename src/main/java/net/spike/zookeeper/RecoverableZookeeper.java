@@ -11,6 +11,8 @@
 
 package net.spike.zookeeper;
 
+import net.spike.zookeeper.retry.RetryCounter;
+import net.spike.zookeeper.retry.RetryCounterFactory;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
@@ -31,14 +33,16 @@ public class RecoverableZookeeper {
 
     final static Logger logger = LoggerFactory.getLogger(RecoverableZookeeper.class);
     private final int MAX_RETRIES = 3;
-    private long RETRY_INTERVAL = 1000;
+    private int RETRY_INTERVAL = 1000;
     private int sessionTimeout = 1000;
+
+    private RetryCounterFactory retryCounterFactory = new RetryCounterFactory(MAX_RETRIES, RETRY_INTERVAL);
 
     private ZooKeeper zk;
 
-    public RecoverableZookeeper(String connectionString, Watcher watcher) throws IOException {
-        this.zk = new ZooKeeper(connectionString, sessionTimeout, watcher);
-    }
+public RecoverableZookeeper(String connectionString, Watcher watcher) throws IOException {
+    this.zk = new ZooKeeper(connectionString, sessionTimeout, watcher);
+}
 
     /**
      * Checks if znode exists, retries up to MAX_ENTRIES with a RETRY_INTERVAL in betweeen retries
@@ -53,7 +57,7 @@ public class RecoverableZookeeper {
      * @throws InterruptedException
      */
     public Stat exists(String path, Watcher watcher) throws KeeperException, InterruptedException {
-        int remainingRetries = MAX_RETRIES;
+        RetryCounter retryCounter = retryCounterFactory.create();
         while (true) {
             try {
                 return zk.exists(path, watcher);
@@ -61,51 +65,49 @@ public class RecoverableZookeeper {
                 switch (e.code()) {
                     case CONNECTIONLOSS:
                     case OPERATIONTIMEOUT:
-                        if (remainingRetries > 0) {
+                        if (!retryCounter.shouldRetry()) {
                             break;
                         }
                     default:
                         throw e;
                 }
             }
-            TimeUnit.MILLISECONDS.sleep(RETRY_INTERVAL);
-            remainingRetries--;
+            retryCounter.sleepUntilNextRetry();
+            retryCounter.useRetry();
         }
     }
 
     /**
      * Creation of a non sequential ephemeral znode with retry logic
      */
-    public String create(String path, byte[] data) throws KeeperException, InterruptedException {
-        int remainingRetries = MAX_RETRIES;
-        boolean isRetry = false;
-        while (true) {
-            try {
-                return zk.create(path, data, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-            } catch (KeeperException e) {
-                logger.debug("Error code: " + e.code());
-                switch (e.code()) {
-                    case NODEEXISTS:
-                        if (isRetry) {
-                            byte[] currentData = zk.getData(path, false, null);
-                            if (currentData != null && Arrays.equals(currentData, data)) {
-                                return path;
-                            }
-                            throw e;
+public String create(String path, byte[] data) throws KeeperException, InterruptedException {
+    RetryCounter retryCounter = retryCounterFactory.create();
+    while (true) {
+        try {
+            return zk.create(path, data, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        } catch (KeeperException e) {
+            logger.debug("Error code: " + e.code());
+            switch (e.code()) {
+                case NODEEXISTS:
+                    if (retryCounter.shouldRetry()) {
+                        byte[] currentData = zk.getData(path, false, null);
+                        if (currentData != null && Arrays.equals(currentData, data)) {
+                            return path;
                         }
                         throw e;
-                    case CONNECTIONLOSS:
-                    case OPERATIONTIMEOUT:
-                        if (remainingRetries > 0) {
-                            break;
-                        }
-                    default:
-                        throw e;
-                }
+                    }
+                    throw e;
+                case CONNECTIONLOSS:
+                case OPERATIONTIMEOUT:
+                    if (!retryCounter.shouldRetry()) {
+                        break;
+                    }
+                default:
+                    throw e;
             }
-            TimeUnit.MILLISECONDS.sleep(RETRY_INTERVAL);
-            remainingRetries--;
-            isRetry = true;
         }
+        retryCounter.sleepUntilNextRetry();
+        retryCounter.useRetry();
+    }
     }
 }
