@@ -19,6 +19,10 @@ Dir['/opt/zookeeper/lib/*.jar'].each do |jar|
   classpath += "#{jar}:"
 end
 
+Dir['/usr/share/java/zookeeper*.jar'].each do |jar|
+  classpath += "#{jar}:"
+end
+
 Dir['/opt/zookeeper/*.jar'].each do |jar|
   classpath += "#{jar}:"
 end
