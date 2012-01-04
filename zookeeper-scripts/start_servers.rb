@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'fileutils'
-
 basedir = `pwd`[0..-2] 
 configdir = "#{basedir}/zk/etc/zookeeper/"
 
