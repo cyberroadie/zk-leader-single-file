@@ -26,12 +26,13 @@ import java.lang.management.ManagementFactory;
  */
 public class Speaker implements Runnable, ZNodeMonitor.ZNodeMonitorListener {
 
+    public LeaderState state = LeaderState.INACTIVE;
+
     final static Logger logger = LoggerFactory.getLogger(Speaker.class);
 
     private String message;
     private String processName;
     private long counter = 0;
-    private volatile boolean canSpeak = false;
 
     public Speaker(String message) throws IOException, InterruptedException, KeeperException {
         this.message = message;
@@ -46,8 +47,15 @@ public class Speaker implements Runnable, ZNodeMonitor.ZNodeMonitorListener {
 
     public void run() {
         try {
-            if (canSpeak) {
-                handleTask();
+            switch (state) {
+                case ACTIVE:
+                    handleTask();
+                    break;
+                case PAUSED:
+                    pauseTask();
+                    break;
+                case INACTIVE:
+                    break;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -64,14 +72,14 @@ public class Speaker implements Runnable, ZNodeMonitor.ZNodeMonitorListener {
         out.close();
     }
 
-    @Override
-    public void startSpeaking() {
-        this.canSpeak = true;
+    public void pauseTask() throws IOException {
+        String msg = message + ": paused " + processName;
+        logger.debug(msg);
     }
 
     @Override
-    public void stopSpeaking() {
-        this.canSpeak = false;
+    public void setState(LeaderState state) {
+        this.state = state;
     }
 
     @Override
