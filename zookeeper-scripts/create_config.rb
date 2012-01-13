@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'fileutils'
-
 max = 5
 if ARGV.length > 0 
   max = ARGV[0].to_i
@@ -17,8 +15,8 @@ basedir = `pwd`[0..-2]
 configdir = "#{basedir}/zk/etc/zookeeper/"
 puts "Creating configuration directory #{configdir}"
 
-FileUtils.mkdir_p(configdir)
-FileUtils.copy("log4j.properties", configdir)
+`mkdir -p #{configdir}`
+`cp log4j.properties #{configdir}`
 
 (1..max).each do |i| 
  t = i.to_s
@@ -28,8 +26,8 @@ FileUtils.copy("log4j.properties", configdir)
  datadir = "#{basedir}/zk/var/lib/zookeeper/zoo#{t}/" 
  logdir = "#{basedir}/zk/var/log/zookeeper/zk#{t}/"
 
- FileUtils.mkdir_p(datadir) rescue nil
- FileUtils.mkdir_p(logdir) rescue nil
+ `mkdir -p #{datadir}`
+ `mkdir -p #{logdir}`
  File.open("#{datadir}myid" , "w") { |f| f.puts i } 
  File.open("#{configdir}zk-#{t}.cfg", 'a') { |f|
    f.puts "tickTime=2000"

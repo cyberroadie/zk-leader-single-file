@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'fileutils'
-
 basedir = `pwd`[0..-2] 
 configdir = "#{basedir}/zk/etc/zookeeper/"
 
@@ -18,6 +16,10 @@ puts "Starting #{max.to_s} servers"
 
 classpath = "#{configdir}:"
 Dir['/opt/zookeeper/lib/*.jar'].each do |jar|
+  classpath += "#{jar}:"
+end
+
+Dir['/usr/share/java/zookeeper*.jar'].each do |jar|
   classpath += "#{jar}:"
 end
 
