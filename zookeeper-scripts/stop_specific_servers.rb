@@ -7,7 +7,7 @@ if ARGV.length == 0
   Kernel.exit
 end
 
-basedir = `pwd`[0..-2] 
+basedir = Dir.pwd 
 datadir = "#{basedir}/zk/var/lib/zookeeper/zoo" 
 
 ARGV.each do |n| 
