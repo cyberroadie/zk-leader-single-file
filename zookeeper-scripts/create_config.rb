@@ -8,10 +8,10 @@ if ARGV.length > 0
   end
 end
 
-puts "creating #{max.to_s} configurations"
-connection_string = ""
+puts "Creating #{max} configurations"
+connection_string = String.new
 
-basedir = `pwd`[0..-2] 
+basedir = Dir.pwd
 configdir = "#{basedir}/zk/etc/zookeeper/"
 puts "Creating configuration directory #{configdir}"
 
@@ -45,7 +45,5 @@ connection_string += "localhost:218#{t},"
  
 end
 
-puts connection_string[0..-2]
+puts connection_string.chomp
 File.open("speaker.config", 'w') { |f| f.puts "connectionString=#{connection_string[0..-2]}" }
-
-

@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-basedir = `pwd`[0..-2] 
+basedir = Dir.pwd 
 configdir = "#{basedir}/zk/etc/zookeeper/"
 
 max = 0
@@ -11,7 +11,7 @@ Dir["#{configdir}/zk-*"].each do |f|
     end
 end
 
-puts "Starting #{max.to_s} servers"
+puts "Starting #{max} servers"
 # CLASSPATH = "#{configdir}:/usr/share/java/jline.jar:/usr/share/java/log4j-1.2.jar:/usr/share/java/xercesImpl.jar:/usr/share/java/xmlParserAPIs.jar:/usr/share/java/zookeeper.jar"
 
 classpath = "#{configdir}:"
@@ -34,9 +34,9 @@ ZOOMAIN="org.apache.zookeeper.server.quorum.QuorumPeerMain"
 JVMFLAGS="-Dzookeeper.log.threshold=INFO"
 
 (1..max).each do |i|
-  zooCfg = "#{configdir}zk-#{i.to_s}.cfg"
-  zooDataDir = "#{basedir}/zk/var/lib/zookeeper/zoo#{i.to_s}/"
-  zooLogDir = "#{basedir}/zk/var/log/zookeeper/zk#{i.to_s}/"
+  zooCfg = "#{configdir}zk-#{i}.cfg"
+  zooDataDir = "#{basedir}/zk/var/lib/zookeeper/zoo#{i}/"
+  zooLogDir = "#{basedir}/zk/var/log/zookeeper/zk#{i}/"
   job = []
 
   io = IO.popen("java  -Dzookeeper.log.dir=#{zooLogDir}" + 
@@ -46,6 +46,3 @@ JVMFLAGS="-Dzookeeper.log.threshold=INFO"
   puts "Started server #{zooCfg} with pid #{io.pid}" 
   sleep 1
 end
-
-
-
