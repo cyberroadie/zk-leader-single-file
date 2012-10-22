@@ -65,7 +65,7 @@ public RecoverableZookeeper(String connectionString, Watcher watcher) throws IOE
                 switch (e.code()) {
                     case CONNECTIONLOSS:
                     case OPERATIONTIMEOUT:
-                        if (!retryCounter.shouldRetry()) {
+                        if (retryCounter.shouldRetry()) {
                             break;
                         }
                     default:
@@ -99,7 +99,7 @@ public String create(String path, byte[] data) throws KeeperException, Interrupt
                     throw e;
                 case CONNECTIONLOSS:
                 case OPERATIONTIMEOUT:
-                    if (!retryCounter.shouldRetry()) {
+                    if (retryCounter.shouldRetry()) {
                         break;
                     }
                 default:
