@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
 max = 5
-if ARGV.length > 0 
+if ARGV.length > 0
   max = ARGV[0].to_i
   if max == 0
-    max = 5 
+    max = 5
   end
 end
 
@@ -18,17 +18,17 @@ puts "Creating configuration directory #{configdir}"
 `mkdir -p #{configdir}`
 `cp log4j.properties #{configdir}`
 
-(1..max).each do |i| 
+(1..max).each do |i|
  t = i.to_s
  # Delete file if already exists
  File.delete("#{configdir}zk-#{t}.cfg") rescue nil
  # Create data dir
- datadir = "#{basedir}/zk/var/lib/zookeeper/zoo#{t}/" 
+ datadir = "#{basedir}/zk/var/lib/zookeeper/zoo#{t}/"
  logdir = "#{basedir}/zk/var/log/zookeeper/zk#{t}/"
 
  `mkdir -p #{datadir}`
  `mkdir -p #{logdir}`
- File.open("#{datadir}myid" , "w") { |f| f.puts i } 
+ File.open("#{datadir}myid" , "w") { |f| f.puts i }
  File.open("#{configdir}zk-#{t}.cfg", 'a') { |f|
    f.puts "tickTime=2000"
    f.puts "initLimit=10"
@@ -41,8 +41,8 @@ puts "Creating configuration directory #{configdir}"
       f.puts "server.#{s}=localhost:288#{s}:388#{s}"
    end
  }
-connection_string += "localhost:218#{t}," 
- 
+connection_string += "localhost:218#{t},"
+
 end
 
 puts connection_string.chomp

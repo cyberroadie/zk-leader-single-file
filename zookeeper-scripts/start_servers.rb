@@ -3,27 +3,44 @@
 basedir = Dir.pwd 
 configdir = "#{basedir}/zk/etc/zookeeper/"
 
+# Change me to location of zookeeper installation
+zookeeperdir = "#{basedir}/../target/zookeeper"
+
+puts "Checking directory #{basedir}/../target/zookeeper"
+if !File.directory?("#{basedir}/../target/zookeeper/")
+    require 'net/http'
+
+    `wget http://mirror.ox.ac.uk/sites/rsync.apache.org/zookeeper/zookeeper-3.4.3/zookeeper-3.4.3.tar.gz`
+    `gunzip zookeeper-3.4.3.tar.gz`
+
+    if !File.directory?("#{basedir}/../target/")
+        `mkdir #{basedir}/../target`
+    end
+
+    `tar -xvf zookeeper-3.4.3.tar -C #{basedir}/../target/`
+    `ln -s #{basedir}/../target/zookeeper-3.4.3 #{basedir}/../target/zookeeper`
+    `rm zookeeper-3.4.3.tar*`
+end
+
 max = 0
 Dir["#{configdir}/zk-*"].each do |f|
-  f =~ /([0-9])/
+  f =~ /([0-9]+)/
     if max < $1.to_i
       max = $1.to_i
     end
 end
 
 puts "Starting #{max} servers"
-# CLASSPATH = "#{configdir}:/usr/share/java/jline.jar:/usr/share/java/log4j-1.2.jar:/usr/share/java/xercesImpl.jar:/usr/share/java/xmlParserAPIs.jar:/usr/share/java/zookeeper.jar"
 
 classpath = "#{configdir}:"
-Dir['/opt/zookeeper/lib/*.jar'].each do |jar|
+
+Dir["#{zookeeperdir}/lib/*.jar"].each do |jar|
+  puts "Adding #{jar} to classpath"
   classpath += "#{jar}:"
 end
 
-Dir['/usr/share/java/zookeeper*.jar'].each do |jar|
-  classpath += "#{jar}:"
-end
-
-Dir['/opt/zookeeper/*.jar'].each do |jar|
+Dir["#{zookeeperdir}/zookeeper*.jar"].each do |jar|
+  puts "Adding #{jar} to classpath"
   classpath += "#{jar}:"
 end
 
